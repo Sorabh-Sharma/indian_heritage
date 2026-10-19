@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ item.title }} – IndiaHeritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { sans: ['Poppins','sans-serif'], serif: ['Playfair Display','serif'] },
+        colors: {
+          plum: {
+            700: '#381932',
+            800: '#2a1225',
+          },
+          milk: {
+            100: '#FFF3E6',
+          },
+        },
+      }},
+    }
+  </script>
+  <style>
+    body { background-color: #FFF3E6; min-height: 100vh; color: #381932; }
+    .fade-in { animation: fadeIn 0.4s ease-out both; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-[#381932] selection:text-[#FFF3E6]">
+
+  <!-- Navbar -->
+  <nav class="bg-[#FFF3E6]/95 backdrop-blur-md border-b border-[#381932]/10 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="{% url 'landing' %}" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-[#381932] flex items-center justify-center shadow">
+          <i class="fa-solid fa-om text-[#FFF3E6] text-xs"></i>
+        </div>
+        <span class="font-bold text-lg text-[#381932]">IndiaHeritage</span>
+      </a>
+      <a href="{% url 'home' %}" class="text-sm font-semibold text-[#381932] hover:opacity-80 transition-opacity flex items-center gap-1.5">
+        <i class="fa-solid fa-arrow-left text-xs"></i> Back to Directory
+      </a>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto px-6 py-10 fade-in">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-[#381932]/50 mb-8">
+      <a href="{% url 'home' %}" class="hover:text-[#381932] transition-colors">Directory</a>
+      <i class="fa-solid fa-chevron-right text-[8px]"></i>
+      <span class="text-[#381932] font-semibold">{{ item.title }}</span>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-3xl shadow-xl border border-[#381932]/10 overflow-hidden">
+
+      <!-- Header in Plum (#381932) -->
+      <div class="bg-gradient-to-r from-[#381932] to-[#4d1e43] px-8 py-8 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 80% 50%, #FFF3E6 0%, transparent 60%);"></div>
+        <div class="relative">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <span class="bg-[#FFF3E6]/20 text-[#FFF3E6] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-[#FFF3E6]/30">{{ item.category }}</span>
+            <span class="bg-white/10 text-[#FFF3E6]/80 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5 border border-white/20">
+              <i class="fa-solid fa-location-dot text-[10px]"></i> {{ item.region }}
+            </span>
+            {% if item.author %}
+            <span class="bg-white/10 text-[#FFF3E6]/90 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5 border border-white/20">
+              <i class="fa-solid fa-user text-[10px] text-[#FFF3E6]"></i> By {{ item.author.username }}
+            </span>
+            {% endif %}
+          </div>
+          <h1 class="text-[#FFF3E6] font-bold text-3xl md:text-4xl font-serif leading-snug">{{ item.title }}</h1>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-8 py-8 bg-white">
+        <h2 class="text-xs font-bold text-[#381932] uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#381932]"></span> About This Heritage
+        </h2>
+        <div class="text-[#381932]/85 text-base leading-relaxed whitespace-pre-line">{{ item.description }}</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-8 py-5 border-t border-[#381932]/10 flex flex-wrap items-center gap-3 bg-[#FFF3E6]/25">
+        {% if user.is_authenticated and not item.author or request.user == item.author or request.user.is_staff %}
+        <a href="{% url 'edit_item' pk=item.pk %}" class="bg-[#381932] hover:bg-[#4d1e43] text-[#FFF3E6] text-sm font-semibold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow">
+          <i class="fa-solid fa-pen-to-square text-xs"></i> Edit
+        </a>
+        <a href="{% url 'delete_item' pk=item.pk %}" class="bg-[#5c1c28] hover:bg-[#7a2233] text-[#FFF3E6] text-sm font-semibold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 shadow">
+          <i class="fa-solid fa-trash-can text-xs"></i> Delete
+        </a>
+        {% endif %}
+        <a href="{% url 'home' %}" class="ml-auto text-[#381932]/60 hover:text-[#381932] text-sm font-medium transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-arrow-left text-xs"></i> Back to list
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Delete {{ item.title }}? – IndiaHeritage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { sans: ['Poppins','sans-serif'], serif: ['Playfair Display','serif'] },
+        colors: {
+          plum: { 700: '#381932', 800: '#2a1225' },
+          milk: { 100: '#FFF3E6' },
+        },
+      }},
+    }
+  </script>
+  <style>
+    body { background-color: #FFF3E6; min-height: 100vh; color: #381932; }
+    .fade-in { animation: fadeIn 0.4s ease-out both; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body class="font-sans antialiased flex items-center justify-center py-12 px-4 selection:bg-[#381932] selection:text-[#FFF3E6]">
+<div class="w-full max-w-md fade-in">
+
+  <div class="bg-white rounded-3xl shadow-xl border border-[#381932]/10 overflow-hidden text-center">
+
+    <!-- Plum Header -->
+    <div class="bg-gradient-to-r from-[#381932] to-[#4d1e43] px-8 py-8 text-[#FFF3E6]">
+      <div class="w-16 h-16 mx-auto bg-[#FFF3E6]/20 border border-[#FFF3E6]/30 rounded-2xl flex items-center justify-center mb-4">
+        <i class="fa-solid fa-triangle-exclamation text-[#FFF3E6] text-2xl"></i>
+      </div>
+      <h1 class="text-xl font-serif font-bold text-[#FFF3E6]">Delete This Item?</h1>
+      <p class="text-[#FFF3E6]/60 text-xs mt-1">This action will remove it from the public archive.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="px-8 py-8 bg-white">
+      <div class="bg-[#FFF3E6]/60 border border-[#381932]/15 rounded-2xl p-5 mb-6 text-left">
+        <h3 class="font-serif font-bold text-[#381932] text-lg">{{ item.title }}</h3>
+        <p class="text-[#381932]/60 text-xs mt-0.5 font-medium">{{ item.category }} · {{ item.region }}</p>
+        <p class="text-[#381932]/70 text-xs mt-2 leading-relaxed">{{ item.description|truncatechars:100 }}</p>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+        <button type="submit"
+          class="w-full bg-[#5c1c28] hover:bg-[#7a2233] active:scale-[0.98] text-[#FFF3E6] font-bold py-3.5 rounded-2xl shadow-lg shadow-[#5c1c28]/30 transition-all flex items-center justify-center gap-2 mb-3">
+          <i class="fa-solid fa-trash-can text-sm"></i> Yes, Delete Permanently
+        </button>
+      </form>
+
+      <a href="{% url 'item_detail' pk=item.pk %}" class="inline-flex items-center justify-center w-full py-3 text-[#381932]/70 hover:text-[#381932] text-sm font-semibold transition-colors border border-[#381932]/20 rounded-2xl hover:border-[#381932]/40 bg-[#FFF3E6]/40">
+        <i class="fa-solid fa-arrow-left text-xs mr-1.5"></i> No, Go Back
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
