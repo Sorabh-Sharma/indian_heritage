@@ -98,7 +98,12 @@
           <a href="{% url 'add_item' %}" class="hidden md:inline-flex items-center gap-2 bg-[#FFF3E6] hover:bg-white text-[#381932] font-bold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all duration-200 hover:scale-105">
             <i class="fa-solid fa-plus text-xs"></i> Add Item
           </a>
-          <a href="{% url 'logout' %}" class="hidden md:inline-flex text-xs text-[#FFF3E6]/70 hover:text-red-300 font-medium transition-colors">Logout</a>
+          <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="hidden md:inline-flex text-xs text-[#FFF3E6]/70 hover:text-red-300 font-medium transition-colors bg-transparent border-none cursor-pointer">
+              Logout
+            </button>
+          </form>
         {% else %}
           <a href="{% url 'login' %}" class="hidden md:inline-flex text-sm text-[#FFF3E6]/85 hover:text-[#FFF3E6] font-medium transition-colors">Sign In</a>
           <a href="{% url 'register' %}" class="hidden md:inline-flex items-center gap-2 bg-[#FFF3E6] hover:bg-white text-[#381932] font-bold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all duration-200 hover:scale-105">
@@ -120,7 +125,14 @@
         <li><a href="#footer" class="mob-link block text-[#FFF3E6]/85 hover:text-[#FFF3E6] font-medium">About</a></li>
         {% if user.is_authenticated %}
         <li><a href="{% url 'add_item' %}" class="mob-link block text-[#FFF3E6] font-semibold">+ Add Heritage Item</a></li>
-        <li><a href="{% url 'logout' %}" class="mob-link block text-red-300 font-medium">Logout ({{ user.username }})</a></li>
+        <li>
+          <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="mob-link block text-red-300 font-medium bg-transparent border-none cursor-pointer p-0">
+              Logout ({{ user.username }})
+            </button>
+          </form>
+        </li>
         {% else %}
         <li><a href="{% url 'login' %}" class="mob-link block text-[#FFF3E6]/85 hover:text-[#FFF3E6] font-medium">Sign In</a></li>
         <li>

@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.conf import settings
+from django.views.decorators.http import require_POST
 from .models import HeritageItem
 from .forms import HeritageItemForm
 
@@ -107,6 +108,7 @@ def login_user(request):
     return render(request, 'login.html', {'form': form})
 
 
+@require_POST
 def logout_user(request):
     logout(request)
     messages.info(request, "You have been logged out.")

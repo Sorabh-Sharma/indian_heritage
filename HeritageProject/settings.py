@@ -28,9 +28,28 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-default-fallback-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
+
+# ─── CSRF: Required for login/logout to work on Vercel (HTTPS) ───
+# Add your Vercel domain(s) here — without this, all POST forms
+# (including login) will be rejected with 403 Forbidden.
+VERCEL_URL = os.environ.get('VERCEL_URL', '')  # auto-set by Vercel
+APP_URL = os.environ.get('APP_URL', '')         # your custom domain if any
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+if VERCEL_URL:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{VERCEL_URL}')
+if APP_URL:
+    CSRF_TRUSTED_ORIGINS.append(APP_URL)
+
+# Session cookies must be secure on HTTPS (Vercel)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 # Application definition

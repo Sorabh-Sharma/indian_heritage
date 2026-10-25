@@ -84,9 +84,12 @@
           <a href="{% url 'add_item' %}" class="bg-[#381932] hover:bg-[#4d1e43] text-[#FFF3E6] text-sm font-semibold px-4 py-2 rounded-full shadow hover:shadow-lg transition-all flex items-center gap-1.5">
             <i class="fa-solid fa-plus text-xs"></i> Add
           </a>
-          <a href="{% url 'logout' %}" class="text-sm font-medium text-[#381932]/60 hover:text-red-600 transition-colors flex items-center gap-1">
-            <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Logout
-          </a>
+          <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="text-sm font-medium text-[#381932]/60 hover:text-red-600 transition-colors flex items-center gap-1 bg-transparent border-none cursor-pointer p-0">
+              <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i> Logout
+            </button>
+          </form>
         {% else %}
           <a href="{% url 'login' %}" class="text-sm font-medium text-[#381932]/80 hover:text-[#381932] transition-colors">Login</a>
           <a href="{% url 'register' %}" class="bg-[#381932] hover:bg-[#4d1e43] text-[#FFF3E6] text-sm font-semibold px-4 py-2 rounded-full shadow transition-all">Register</a>
