@@ -51,6 +51,13 @@ if APP_URL:
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
+# HTTPS / HSTS security headers (only enforced in production)
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0   # 1 year in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # needed for Vercel
+
 
 # Application definition
 
@@ -137,14 +144,25 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Email — console backend for dev, can be overridden via env in production
+if DEBUG:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
+else:
+    # In production set EMAIL_HOST, EMAIL_PORT, etc. as Vercel env vars
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'HOST': os.environ.get('EMAIL_HOST', 'smtp.gmail.com'),
+            'PORT': int(os.environ.get('EMAIL_PORT', '587')),
+            'USE_TLS': True,
+            'USERNAME': os.environ.get('EMAIL_HOST_USER', ''),
+            'PASSWORD': os.environ.get('EMAIL_HOST_PASSWORD', ''),
+        },
+    }
 
 # Replace your bottom DATABASES block with this:
 DATABASES = {
