@@ -143,8 +143,8 @@ def item_detail(request, pk):
 def edit_item(request, pk):
     item = get_object_or_404(HeritageItem, pk=pk)
 
-    # Verify ownership
-    if item.author and request.user != item.author:
+    # Verify ownership (author or staff/admin)
+    if item.author and request.user != item.author and not request.user.is_staff:
         return HttpResponseForbidden("You do not have permission to edit this heritage item.")
 
     if request.method == 'POST':
@@ -165,8 +165,8 @@ def edit_item(request, pk):
 def delete_item(request, pk):
     item = get_object_or_404(HeritageItem, pk=pk)
 
-    # Verify ownership
-    if item.author and request.user != item.author:
+    # Verify ownership (author or staff/admin)
+    if item.author and request.user != item.author and not request.user.is_staff:
         return HttpResponseForbidden("You do not have permission to delete this heritage item.")
 
     if request.method == 'POST':

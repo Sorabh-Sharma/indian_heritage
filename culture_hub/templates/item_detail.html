@@ -77,12 +77,44 @@
         </div>
       </div>
 
+      <!-- Quick Action Utilities (Audio Guide, Directions & Share) -->
+      <div class="px-8 py-4 bg-[#FFF3E6]/60 border-b border-[#381932]/10 flex flex-wrap items-center justify-between gap-3">
+        <!-- Audio Guide Controls -->
+        <div class="flex items-center gap-2">
+          <button id="btn-audio-toggle" onclick="toggleAudioGuide()" class="bg-[#381932] hover:bg-[#4d1e43] text-[#FFF3E6] text-xs font-semibold px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-sm">
+            <i id="audio-icon" class="fa-solid fa-volume-high text-xs"></i>
+            <span id="audio-text">Listen to Story</span>
+          </button>
+          <button id="btn-audio-stop" onclick="stopAudioGuide()" class="hidden bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-semibold px-3 py-2 rounded-xl transition-all items-center gap-1.5 shadow-sm" title="Stop Narration">
+            <i class="fa-solid fa-stop text-[10px]"></i> Stop
+          </button>
+          <!-- Sound wave indicator -->
+          <div id="audio-wave" class="hidden items-center gap-0.5 ml-1">
+            <span class="w-1 h-3 bg-[#381932] rounded-full animate-bounce"></span>
+            <span class="w-1 h-4 bg-[#381932] rounded-full animate-bounce [animation-delay:0.15s]"></span>
+            <span class="w-1 h-2 bg-[#381932] rounded-full animate-bounce [animation-delay:0.3s]"></span>
+          </div>
+        </div>
+
+        <!-- External Quick Links -->
+        <div class="flex items-center gap-2 ml-auto">
+          {% if item.latitude and item.longitude %}
+          <a href="https://www.google.com/maps/search/?api=1&query={{ item.latitude }},{{ item.longitude }}" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-[#FFF3E6] text-[#381932] border border-[#381932]/20 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-map-location-dot text-emerald-700"></i> Directions
+          </a>
+          {% endif %}
+          <button onclick="shareItem()" class="bg-white hover:bg-[#FFF3E6] text-[#381932] border border-[#381932]/20 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-share-nodes text-indigo-700"></i> Share
+          </button>
+        </div>
+      </div>
+
       <!-- Body -->
       <div class="px-8 py-8 bg-white">
         <h2 class="text-xs font-bold text-[#381932] uppercase tracking-widest mb-4 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-[#381932]"></span> About This Heritage
         </h2>
-        <div class="text-[#381932]/85 text-base leading-relaxed whitespace-pre-line">{{ item.description }}</div>
+        <div id="heritage-description" class="text-[#381932]/85 text-base leading-relaxed whitespace-pre-line">{{ item.description }}</div>
       </div>
 
       <!-- Actions -->
@@ -101,5 +133,149 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast Notification for Share -->
+  <div id="toast-notify" class="fixed bottom-6 right-6 bg-[#381932] text-[#FFF3E6] px-4 py-3 rounded-2xl shadow-xl text-xs font-medium flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i class="fa-solid fa-check text-emerald-400"></i>
+    <span id="toast-text">Link copied to clipboard!</span>
+  </div>
+
+  <script>
+    let speechUtterance = null;
+    let isSpeaking = false;
+    let isPaused = false;
+
+    function getNarrationText() {
+      const title = "{{ item.title|escapejs }}";
+      const region = "{{ item.region|escapejs }}";
+      const category = "{{ item.category|escapejs }}";
+      const descElement = document.getElementById('heritage-description');
+      const desc = descElement ? descElement.innerText : "";
+      return `${title}. Categorized under ${category}, from ${region}. ${desc}`;
+    }
+
+    function toggleAudioGuide() {
+      if (!('speechSynthesis' in window)) {
+        alert("Your browser does not support audio speech narration.");
+        return;
+      }
+
+      const icon = document.getElementById('audio-icon');
+      const text = document.getElementById('audio-text');
+      const stopBtn = document.getElementById('btn-audio-stop');
+      const wave = document.getElementById('audio-wave');
+
+      if (!isSpeaking) {
+        // Start fresh speech
+        window.speechSynthesis.cancel();
+        const narration = getNarrationText();
+        speechUtterance = new SpeechSynthesisUtterance(narration);
+        speechUtterance.rate = 0.95; // comfortable storytelling pace
+        speechUtterance.pitch = 1.0;
+
+        // Try to pick an English voice (prefer Indian/UK/US English if available)
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.lang.includes('en-IN')) || 
+                               voices.find(v => v.lang.includes('en-GB')) || 
+                               voices.find(v => v.lang.includes('en-US'));
+        if (preferredVoice) speechUtterance.voice = preferredVoice;
+
+        speechUtterance.onstart = function() {
+          isSpeaking = true;
+          isPaused = false;
+          icon.className = "fa-solid fa-pause text-xs";
+          text.innerText = "Pause Story";
+          stopBtn.classList.remove('hidden');
+          stopBtn.classList.add('flex');
+          wave.classList.remove('hidden');
+          wave.classList.add('flex');
+        };
+
+        speechUtterance.onend = function() {
+          stopAudioGuide();
+        };
+
+        speechUtterance.onerror = function() {
+          stopAudioGuide();
+        };
+
+        window.speechSynthesis.speak(speechUtterance);
+      } else if (isSpeaking && !isPaused) {
+        // Pause
+        window.speechSynthesis.pause();
+        isPaused = true;
+        icon.className = "fa-solid fa-play text-xs";
+        text.innerText = "Resume Story";
+        wave.classList.add('hidden');
+      } else if (isSpeaking && isPaused) {
+        // Resume
+        window.speechSynthesis.resume();
+        isPaused = false;
+        icon.className = "fa-solid fa-pause text-xs";
+        text.innerText = "Pause Story";
+        wave.classList.remove('hidden');
+      }
+    }
+
+    function stopAudioGuide() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      isPaused = false;
+
+      const icon = document.getElementById('audio-icon');
+      const text = document.getElementById('audio-text');
+      const stopBtn = document.getElementById('btn-audio-stop');
+      const wave = document.getElementById('audio-wave');
+
+      if (icon) icon.className = "fa-solid fa-volume-high text-xs";
+      if (text) text.innerText = "Listen to Story";
+      if (stopBtn) {
+        stopBtn.classList.add('hidden');
+        stopBtn.classList.remove('flex');
+      }
+      if (wave) {
+        wave.classList.add('hidden');
+        wave.classList.remove('flex');
+      }
+    }
+
+    // Clean up speech if user navigates away
+    window.addEventListener('beforeunload', () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    });
+
+    // Share link feature
+    function shareItem() {
+      const shareData = {
+        title: "{{ item.title|escapejs }} | IndiaHeritage",
+        text: "Explore {{ item.title|escapejs }} on IndiaHeritage!",
+        url: window.location.href,
+      };
+
+      if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          showToast("Link copied to clipboard!");
+        });
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast-notify');
+      const toastText = document.getElementById('toast-text');
+      if (toast && toastText) {
+        toastText.innerText = message;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 2500);
+      }
+    }
+  </script>
 </body>
 </html>
