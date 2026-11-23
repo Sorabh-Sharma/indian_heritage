@@ -41,6 +41,7 @@ APP_URL = os.environ.get('APP_URL', '')         # your custom domain if any
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://*.vercel.app',
 ]
 if VERCEL_URL:
     CSRF_TRUSTED_ORIGINS.append(f'https://{VERCEL_URL}')
@@ -51,12 +52,9 @@ if APP_URL:
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
-# HTTPS / HSTS security headers (only enforced in production)
-SECURE_SSL_REDIRECT = not DEBUG
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0   # 1 year in production
-SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
-SECURE_HSTS_PRELOAD = not DEBUG
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # needed for Vercel
+# Vercel handles SSL termination at the edge network
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
